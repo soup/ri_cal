@@ -10,7 +10,7 @@ module RiCal
         result = buffer_or_line
         @buffer = nil
         while /^\s/ =~ buffer_or_line
-          result = "#{result}#{@buffer[1..-1]}"
+          result = "#{result}\n#{@buffer[1..-1]}"
           @buffer = nil
         end
       rescue EOFError
@@ -58,10 +58,12 @@ module RiCal
     end
     
     def separate_line(string) #:nodoc:
-      match = string.match(/^([^;:]*)(.*)$/)
+      match = string.match(/^([^;:]*)(.*)$/m)
       name = match[1]
+      data = match[2]
+      data = data.gsub("\n", "") if data.include?("\\n") # Only remove unencoded newlines if this feed properly encodes them.
       @last_line_str = string
-      params, value = *Parser.params_and_value(match[2])
+      params, value = *Parser.params_and_value(data)
       {
         :name => name,
         :params => params,
